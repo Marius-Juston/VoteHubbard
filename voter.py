@@ -5,14 +5,12 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
-if __name__ == '__main__':
-    priority_order = {"W. Hubbard": 2, "Vernon": 1}
 
-    driver = Chrome()
+def find_option_selectors(driver, timeout):
+    WebDriverWait(driver, timeout).until(EC.presence_of_element_located((By.CLASS_NAME, 'select-placeholder')))
+    return driver.find_elements_by_class_name("select-placeholder")
 
-    url = "http://tinyurl.com/votehubbard"
 
-    driver.get(url)
 def get_important_person(option_list, order):
     options = option_list.find_elements_by_xpath("./li/div/span")
 
