@@ -54,3 +54,9 @@ def submit(driver):
     submit_button = driver.find_element_by_class_name("button-content")
     submit_button.click()
 
+
+def resubmit(driver, timeout):
+    WebDriverWait(driver, timeout).until(
+        EC.presence_of_element_located((By.XPATH, '//a[.="Submit another response"]')))
+    driver.find_element_by_xpath('//a[.="Submit another response"]').click()
+
