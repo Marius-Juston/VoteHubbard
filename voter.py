@@ -37,7 +37,9 @@ if __name__ == '__main__':
         option = max(options, key=ordering)
         option.click()
 
+
+def submit(driver):
     submit_button = driver.find_element_by_class_name("button-content")
-    submit_button.submit()
+    submit_button.click()
 
     driver.close()
