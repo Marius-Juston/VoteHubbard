@@ -60,3 +60,26 @@ def resubmit(driver, timeout):
         EC.presence_of_element_located((By.XPATH, '//a[.="Submit another response"]')))
     driver.find_element_by_xpath('//a[.="Submit another response"]').click()
 
+
+if __name__ == '__main__':
+    priority_order = {"W. Hubbard": 3, "Other": 2, "Vernon": 1}
+    browser = Chrome()
+    number_of_submits = 1000
+    delay = 10
+    url = "http://tinyurl.com/votehubbard"
+    browser.get(url)
+
+    for i in range(number_of_submits):
+        selections = find_option_selectors(browser, delay)
+        go_though_options(browser, selections, delay, priority_order)
+
+        fill_in_other(browser)
+
+        submit(browser)
+
+        print("Number of submits:", i)
+
+        if number_of_submits > 1:
+            resubmit(browser, delay)
+
+    browser.close()
