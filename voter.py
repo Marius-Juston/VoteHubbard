@@ -32,10 +32,14 @@ if __name__ == '__main__':
             if x in priority_order:
                 return priority_order[x]
             return 0
+def fill_in_other(driver):
+    inputs = driver.find_elements_by_xpath(
+        '//input[../../..//div//div//span[.="Other"]]')
 
+    preferd_input = max(priority_order.keys(), key=lambda x: priority_order[x])
 
-        option = max(options, key=ordering)
-        option.click()
+    for textfield in inputs:
+        textfield.send_keys(preferd_input)
 
 
 def submit(driver):
