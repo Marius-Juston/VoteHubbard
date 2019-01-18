@@ -1,3 +1,5 @@
+import random
+
 from selenium.webdriver import Chrome
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
@@ -11,13 +13,23 @@ if __name__ == '__main__':
     url = "http://tinyurl.com/votehubbard"
 
     driver.get(url)
+def get_important_person(option_list, order):
+    options = option_list.find_elements_by_xpath("./li/div/span")
 
-    delay = 10
+    def ordering(x):
+        x = x.text
+        if x in order:
+            return priority_order[x]
+        return 0
 
-    WebDriverWait(driver, delay).until(EC.presence_of_element_located((By.CLASS_NAME, 'select-placeholder')))
-    selections = driver.find_elements_by_class_name("select-placeholder")
+    results = list(map(ordering, options))
 
-    for element in selections:
+    if any(results):
+        return max(options, key=ordering)
+
+    return options[random.randint(0, len(options) - 1)]
+
+
 def go_though_options(driver, question_option_list, timeout, order):
     for element in question_option_list:
         element.click()
@@ -30,11 +42,6 @@ def go_though_options(driver, question_option_list, timeout, order):
         option.click()
 
 
-        def ordering(x):
-            x = x.text
-            if x in priority_order:
-                return priority_order[x]
-            return 0
 def fill_in_other(driver):
     inputs = driver.find_elements_by_xpath(
         '//input[../../..//div//div//span[.="Other"]]')
@@ -49,4 +56,3 @@ def submit(driver):
     submit_button = driver.find_element_by_class_name("button-content")
     submit_button.click()
 
-    driver.close()
