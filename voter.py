@@ -18,13 +18,16 @@ if __name__ == '__main__':
     selections = driver.find_elements_by_class_name("select-placeholder")
 
     for element in selections:
+def go_though_options(driver, question_option_list, timeout, order):
+    for element in question_option_list:
         element.click()
 
-        WebDriverWait(driver, delay).until(
+        WebDriverWait(driver, timeout).until(
             EC.presence_of_element_located((By.CLASS_NAME, 'select-option-menu-container')))
         option_list = driver.find_element_by_class_name("select-option-menu-container")
 
-        options = option_list.find_elements_by_xpath("./li/div/span")
+        option = get_important_person(option_list, order)
+        option.click()
 
 
         def ordering(x):
