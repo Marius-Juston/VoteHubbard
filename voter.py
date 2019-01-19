@@ -6,9 +6,14 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
 
-def find_option_selectors(driver, timeout):
-    WebDriverWait(driver, timeout).until(EC.presence_of_element_located((By.CLASS_NAME, 'select-placeholder')))
-    return driver.find_elements_by_class_name("select-placeholder")
+def find_option_selectors(driver, gender, timeout):
+    xpath = '//div[..//..//..//..//div[@class="question-title-box"]//div//div//span[contains(text(), ' \
+            '"{}")]][@class="select-placeholder"]'.format(gender)
+
+    print(xpath)
+
+    WebDriverWait(driver, timeout).until(EC.presence_of_element_located((By.XPATH, xpath)))
+    return driver.find_elements_by_xpath(xpath)
 
 
 def get_important_person(option_list, order):
@@ -17,18 +22,20 @@ def get_important_person(option_list, order):
     def ordering(x):
         x = x.text
         if x in order:
-            return priority_order[x]
+            return order[x]
         return 0
 
     results = list(map(ordering, options))
 
+    v = set(map(lambda x: x.text.title(), options))
     if any(results):
-        return max(options, key=ordering)
-
-    return options[random.randint(0, len(options) - 1)]
+        return max(options, key=ordering), v
+    return options[random.randint(0, len(options) - 1)], v
 
 
 def go_though_options(driver, question_option_list, timeout, order):
+    p = set()
+
     for element in question_option_list:
         element.click()
 
@@ -36,18 +43,22 @@ def go_though_options(driver, question_option_list, timeout, order):
             EC.presence_of_element_located((By.CLASS_NAME, 'select-option-menu-container')))
         option_list = driver.find_element_by_class_name("select-option-menu-container")
 
-        option = get_important_person(option_list, order)
+        option, people = get_important_person(option_list, order)
+        p.update(people)
         option.click()
 
+    return p
 
-def fill_in_other(driver):
+
+def fill_in_other(driver, order, gender):
     inputs = driver.find_elements_by_xpath(
-        '//input[../../..//div//div//span[.="Other"]]')
+        '//input[../../..//div//div//span[.="Other"]][../..//..//..//..//div['
+        '@class="question-title-box"]//div//div//span[contains(text(), "{}")]]'.format(gender))
 
-    preferd_input = max(priority_order.keys(), key=lambda x: priority_order[x])
+    preferred_input = max(order.keys(), key=lambda x: order[x])
 
     for textfield in inputs:
-        textfield.send_keys(preferd_input)
+        textfield.send_keys(preferred_input)
 
 
 def submit(driver):
@@ -61,19 +72,40 @@ def resubmit(driver, timeout):
     driver.find_element_by_xpath('//a[.="Submit another response"]').click()
 
 
+def go_though_gender_selection(browser, delay, gender, priority_order):
+    selections = find_option_selectors(browser, gender, delay)
+    people = go_though_options(browser, selections, delay, priority_order)
+
+    if len(priority_order) > 0:
+        people_options = priority_order.copy()
+    else:
+        people_options = {key: random.random() for key in people}
+
+    if "Other" in people_options:
+        del people_options["Other"]
+    print(people_options)
+    fill_in_other(browser, people_options, gender)
+
+
 if __name__ == '__main__':
-    priority_order = {"W. Hubbard": 3, "Other": 2, "Vernon": 1}
+    priority_order = {
+        "Male": {
+            "W. Hubbard": 3, "Other": 2, "Vernon": 1
+        },
+        "Female": {
+
+        }
+    }
     browser = Chrome()
-    number_of_submits = 1000
+    number_of_submits = 500
     delay = 10
     url = "http://tinyurl.com/votehubbard"
+
     browser.get(url)
 
     for i in range(number_of_submits):
-        selections = find_option_selectors(browser, delay)
-        go_though_options(browser, selections, delay, priority_order)
-
-        fill_in_other(browser)
+        for gender in priority_order:
+            go_though_gender_selection(browser, delay, gender, priority_order[gender])
 
         submit(browser)
 
@@ -81,5 +113,4 @@ if __name__ == '__main__':
 
         if number_of_submits > 1:
             resubmit(browser, delay)
-
     browser.close()
